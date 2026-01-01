@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Sklep (lab2)</title>
+    <style>
+        body { font-family: Arial; margin: 30px; }
+        h2 { margin-top: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 6px; }
+        button { padding: 4px 8px; }
+    </style>
+</head>
+<body>
+
+<h1>Sklep (lab02)</h1>
+
+<h2>Produkty</h2>
+<table id="products">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nazwa</th>
+        <th>Cena</th>
+        <th>Akcja</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Koszyk</h2>
+<table id="cart">
+    <thead>
+    <tr>
+        <th>Produkt ID</th>
+        <th>Ilość</th>
+        <th>Akcja</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<button onclick="checkout()">🧾 Zamów</button>
+
+<h2>Zamówienia</h2>
+<table id="orders">
+    <thead>
+    <tr>
+        <th>ID zamówienia</th>
+        <th>Data</th>
+        <th>Suma</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+
+<script>
+    async function loadProducts() {
+        const res = await fetch('/api/products');
+        const products = await res.json();
+
+        const tbody = document.querySelector('#products tbody');
+        tbody.innerHTML = '';
+
+        products.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+      <td>${p.Id}</td>
+      <td>${p.Name}</td>
+      <td>${p.Price.toFixed(2)} zł</td>
+      <td>
+        <button onclick="addToCart(${p.Id})">Dodaj</button>
+      </td>
+    `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function loadCart() {
+        const res = await fetch('/api/cart');
+        const cart = await res.json();
+
+        const tbody = document.querySelector('#cart tbody');
+        tbody.innerHTML = '';
+
+        cart.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+      <td>${item.product_id}</td>
+      <td>${item.qty}</td>
+      <td>
+        <button onclick="removeFromCart(${item.product_id})">Usuń</button>
+      </td>
+    `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function addToCart(product_id) {
+        await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id, qty: 1 })
+        });
+
+        loadCart();
+    }
+
+    async function removeFromCart(product_id) {
+        await fetch('/api/cart/item/' + product_id, {
+            method: 'DELETE'
+        });
+
+        loadCart();
+    }
+
+    async function checkout() {
+        const res = await fetch('/api/checkout', {
+            method: 'POST'
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+
+            alert(`Zamówienie ${data.order_id} | Suma: ${data.total} zł`);
+
+            // 🔥 KLUCZOWE LINIE
+            await loadCart();
+            await loadOrders();   // ← TO MUSI TU BYĆ
+        } else {
+            const err = await res.json();
+            alert(err.error);
+        }
+    }
+
+    async function loadOrders() {
+        const res = await fetch('/api/orders');
+        const orders = await res.json();
+
+        const tbody = document.querySelector('#orders tbody');
+        tbody.innerHTML = '';
+
+        orders.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+      <td>${o.OrderId}</td>
+      <td>${o.CreatedAt}</td>
+      <td>${o.Total.toFixed(2)} zł</td>
+    `;
+            tbody.appendChild(tr);
+        });
+    }
+
+
+    loadProducts();
+    loadCart();
+    loadOrders();
+</script>
+
+</body>
+</html>
