@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:3000
+
+### GET - lista produktów
+GET {{baseUrl}}/api/products
+
+### POST - dodanie produktu
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Klawiatura",
+  "price": 129.99
+}
+
+### GET - koszyk (początkowo pusty)
+GET {{baseUrl}}/api/cart
+
+### POST - dodanie do koszyka
+POST {{baseUrl}}/api/cart/add
+Content-Type: application/json
+
+{
+  "product_id": 1,
+  "qty": 2
+}
+
+### PATCH - zmiana ilości
+PATCH {{baseUrl}}/api/cart/item
+Content-Type: application/json
+
+{
+  "product_id": 1,
+  "qty": 3
+}
+
+### DELETE - usunięcie z koszyka
+DELETE {{baseUrl}}/api/cart/item/1
+
+### POST - checkout (zamówienie)
+POST {{baseUrl}}/api/checkout
