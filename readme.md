@@ -1,4 +1,4 @@
-# Lab2 - koszyk
+# Lab2 - 
 
 
 ---
@@ -21,7 +21,7 @@
 W katalogu projektu:
 
 ```bash
-npm install
+npm install sqlite3 express
 ```
 
 ---
